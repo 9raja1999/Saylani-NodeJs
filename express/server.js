@@ -16,6 +16,8 @@ const app = express()
             console.log("DB CONNECTED");
 
             app.use(cors(corsConfig))
+            app.use(express.json()) // to accept json in body
+
 
             app.use('/user', userRoute)
             app.use('/todo', todoRoute)
