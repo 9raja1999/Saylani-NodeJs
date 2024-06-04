@@ -30,8 +30,28 @@ const saveToken = async (payload) => {
     }
 }
 
+const getTokenByUID = async (uid) => {
+    try {
+        const response = await Token.find({ user: uid })
+        return response
+    } catch (error) {
+        throw error
+    }
+}
+
+const deleteTokensByUID = async (uid) => {
+    try {
+        const response = await Token.deleteMany({ user: uid })
+        return response
+    } catch (error) {
+        throw error
+    }
+}
+
 module.exports = {
     findByEmail,
     createUser,
-    saveToken
+    saveToken,
+    getTokenByUID,
+    deleteTokensByUID
 }

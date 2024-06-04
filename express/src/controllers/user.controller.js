@@ -1,25 +1,28 @@
 const jwt = require('jsonwebtoken')
-const { findByEmail, createUser, saveToken } = require('../services/user.service.js');
+const { findByEmail, createUser, saveToken, getTokenByUID, deleteTokensByUID } = require('../services/user.service.js');
 const { createHash, compareHash } = require('../utils/hash.util.js');
 const { config } = require('../configs/server.config.js');
 
 const login = async (req, res) => {
     try {
+        console.log("IP" , req.ip)
         const { email, password } = req.body
 
         const user = await findByEmail(email)
-        if (!user) return res.send('Invalid credentials')
+        if (!user) return res.status(500).json({ success: false, message: 'invalid creds', data: null })
 
+        const isAlreadyLoggedin = await getTokenByUID(user.id)
+        if (isAlreadyLoggedin?.length > 0) return res.status(500).json({ success: false, message: 'already logged in', data: null })
 
         const passwordMatch = await compareHash(password, user.password)
-        if (!passwordMatch) return res.send('Invalid credentials')
+        if (!passwordMatch) return res.status(500).json({ success: false, message: 'invalid creds', data: null })
 
         const token = jwt.sign({ email: user.email, username: user.username }, config.secretKey, { expiresIn: '1h' })
 
         const generateToken = await saveToken({ token, user: user.id })
 
-        
-        res.send(token)
+
+        return res.status(200).json({ success: true, message: 'success', data: {token : generateToken.token} })
     } catch (error) {
         res.send("Something went wrong")
     }
@@ -51,8 +54,23 @@ const signup = async (req, res) => {
     }
 }
 
+const logout = async (req, res) => {
+    try {
+        const { uid } = req.body
+        const logoutUser = await deleteTokensByUID(uid)
+        if (logoutUser.deletedCount === 0) {
+            return res.status(500).json({ success: false, message: 'already logged in', data: null })
+        }
+
+        return res.status(200).json({ success: true, message: 'succesfully logged out', data: null })
+    } catch (error) {
+        return res.status(500).json({ success: false, message: 'something went wrong', data: null })
+    }
+}
+
 
 module.exports = {
     login,
-    signup
+    signup,
+    logout
 }
