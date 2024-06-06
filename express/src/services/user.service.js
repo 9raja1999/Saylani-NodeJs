@@ -20,6 +20,18 @@ const createUser = async (payload) => {
     }
 }
 
+const UpdateUserByEmail = async (email) => {
+    try {
+        const response = await User.updateOne(
+            { email: email },// filter,
+            { isActive: true } // data to update
+        )
+        return response
+    } catch (error) {
+        throw error
+    }
+}
+
 const saveToken = async (payload) => {
     try {
         const newToken = new Token({ ...payload })
@@ -53,5 +65,6 @@ module.exports = {
     createUser,
     saveToken,
     getTokenByUID,
-    deleteTokensByUID
+    deleteTokensByUID,
+    UpdateUserByEmail
 }
