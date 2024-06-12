@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken')
+const { validationResult } = require('express-validator')
 const { findByEmail, createUser, saveToken, getTokenByUID, deleteTokensByUID, UpdateUserByEmail } = require('../services/user.service.js');
 const { createHash, compareHash } = require('../utils/hash.util.js');
 const { config } = require('../configs/server.config.js');
@@ -32,6 +33,15 @@ const login = async (req, res) => {
 }
 const signup = async (req, res) => {
     try {
+        const errors = validationResult(req)
+
+        console.log("Error", errors);
+        if (!errors.isEmpty()) return res.status(500).json({
+            success: false,
+            data: errors.array(),
+            message: 'validation error'
+        })
+
         const { username, email, password } = req.body
 
         const user = await findByEmail(email)
