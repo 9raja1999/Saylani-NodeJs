@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const { generateOtp } = require('../utils/randomString.util')
 const { sendEmail } = require('../services/mail.service')
+const emailQueue = require('../Queues/index.js')
 
 const { Schema } = mongoose
 
@@ -32,12 +33,18 @@ const UserSchema = new Schema({
 UserSchema.pre('save', function (next) {
     if (!this.otp) {
         this.otp = generateOtp()
-        sendEmail({
+        const payload = {
             to: this.email,
             subject: 'Your otp',
             text: `Your otp is ${this.otp}`
-        }).then(res => console.log(`Success sending email to ${this.email}`))
-            .catch(err => console.log(`Error sending email to ${this.email}`))
+        }
+        emailQueue.add({ ...payload })
+        // sendEmail({
+        //     to: this.email,
+        //     subject: 'Your otp',
+        //     text: `Your otp is ${this.otp}`
+        // }).then(res => console.log(`Success sending email to ${this.email}`))
+        //     .catch(err => console.log(`Error sending email to ${this.email}`))
     }
     next()
 })

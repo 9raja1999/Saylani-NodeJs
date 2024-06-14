@@ -21,6 +21,7 @@ const sendEmail = async (data) => {
 
         return response
     } catch (error) {
+        console.log("Error", error);
         throw error
     }
 }
